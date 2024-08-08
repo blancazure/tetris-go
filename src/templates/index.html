@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris en Go</title>
-    <style>
-        canvas {
-            display: block;
-            margin: 0 auto;
-            background: #000;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Javascript Tetris</title>
+  <link rel="stylesheet" type="text/css" href="/static/estilos.css">
 </head>
 <body>
-    <canvas id="tetris" width="320" height="640"></canvas>
-    <script src="/static/tetris.js"></script>
+
+  <div id="tetris">
+    <div id="menu">
+      <p id="inicio"><a href="javascript:iniciar();">Presiona Espacio para Jugar.</a></p>
+      <p><canvas id="proximo"></canvas></p>
+      <p>puntuación <span id="puntuacion">00000</span></p>
+      <p>filas <span id="filas">0</span></p>
+    </div>
+    <canvas id="canvas">
+      Lo siento, este ejemplo no puede ejecutarse porque tu navegador no soporta el elemento &lt;canvas&gt;
+    </canvas>
+  </div>
+
+  <script src="/static/tetris.js"></script>
 </body>
 </html>
