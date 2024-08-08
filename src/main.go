@@ -1,29 +1,54 @@
 package main
 
 import (
-    "html/template"
     "log"
     "net/http"
     "os"
+    "os/signal"
+    "syscall"
     "github.com/gorilla/mux"
 )
 
-var templates = template.Must(template.ParseFiles("templates/index.html"))
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-    templates.ExecuteTemplate(w, "index.html", nil)
-}
-
 func main() {
-    r := mux.NewRouter()
-    r.HandleFunc("/", indexHandler)
-    r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+    router := mux.NewRouter()
 
-    puerto := os.Getenv("PUERTO_TETRIS")
-    if puerto == "" {
-        puerto = "3000"
+    // Servir archivos estáticos desde el directorio "./static"
+    router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+
+    // Manejar la ruta principal para servir el archivo HTML principal
+    router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        http.ServeFile(w, r, "./templates/index.html")
+    })
+
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
     }
 
-    log.Println("Servidor iniciado en el puerto:", puerto)
-    log.Fatal(http.ListenAndServe(":"+puerto, r))
+    server := &http.Server{
+        Addr:    ":" + port,
+        Handler: router,
+    }
+
+    // Canal para recibir las señales del sistema
+    stop := make(chan os.Signal, 1)
+    signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+
+    // Iniciar el servidor en una goroutine
+    go func() {
+        log.Println("Iniciando servidor en el puerto " + port)
+        if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+            log.Fatalf("Error en ListenAndServe: %v\n", err)
+        }
+    }()
+
+    // Esperar una señal de parada
+    <-stop
+
+    // Realizar una parada limpia del servidor
+    log.Println("Deteniendo servidor...")
+    if err := server.Close(); err != nil {
+        log.Fatalf("Error en la parada del servidor: %v\n", err)
+    }
+    log.Println("Servidor detenido.")
 }
